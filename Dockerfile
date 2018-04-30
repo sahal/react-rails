@@ -4,10 +4,19 @@ ARG RUBY_VERSION=2.5.0
 
 RUN apt-get update && \
     apt-get install -y \
+     apt-transport-https \ 
      curl && \
     apt-get clean
 
 # install yarn and nodejs
+RUN curl -s https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - && \
+    echo "deb https://deb.nodesource.com/node_8.x trusty main" | tee -a /etc/apt/sources.list.d/nodesource.list && \
+    echo "deb-src https://deb.nodesource.com/node_8.x trusty main" | tee -a /etc/apt/sources.list.d/nodesource.list && \
+    apt-get update && \
+    apt-get install -y \
+      nodejs && \
+    apt-get clean
+
 RUN apt-key adv --fetch-keys http://dl.yarnpkg.com/debian/pubkey.gpg &&\
     echo "deb http://dl.yarnpkg.com/debian/ stable main" | \
       tee /etc/apt/sources.list.d/yarn.list && \
