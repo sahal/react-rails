@@ -1,60 +1,63 @@
 FROM ubuntu:trusty
 
+MAINTAINER https://github.com/reactjs/react-rails
+
 ARG RUBY_VERSION=2.5.0
 
 RUN apt-get update && \
-    apt-get install -y \
-     apt-transport-https \ 
-     curl && \
-    apt-get clean
+    apt-get install --no-install-recommends -y \
+      apt-transport-https \
+      software-properties-common \
+      curl && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # install yarn and nodejs
-RUN curl -s https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - && \
+RUN curl -sSL https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - && \
     echo "deb https://deb.nodesource.com/node_8.x trusty main" | tee -a /etc/apt/sources.list.d/nodesource.list && \
     echo "deb-src https://deb.nodesource.com/node_8.x trusty main" | tee -a /etc/apt/sources.list.d/nodesource.list && \
     apt-get update && \
-    apt-get install -y \
+    apt-get install --no-install-recommends -y \
       nodejs && \
-    apt-get clean
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-RUN apt-key adv --fetch-keys http://dl.yarnpkg.com/debian/pubkey.gpg &&\
+RUN apt-key adv --fetch-keys http://dl.yarnpkg.com/debian/pubkey.gpg && \
     echo "deb http://dl.yarnpkg.com/debian/ stable main" | \
       tee /etc/apt/sources.list.d/yarn.list && \
     apt-get update && \
-    apt-get install -y \
+    apt-get install --no-install-recommends -y \
       yarn && \
-    apt-get clean
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # install Google Chrome
 RUN curl -sSL https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - && \
     echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | tee /etc/apt/sources.list.d/google.list && \
-   apt-get update && \
-   apt-get install -y \
-     google-chrome-stable && \
-   apt-get clean
+    apt-get update && \
+    apt-get install -y \
+      google-chrome-stable && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # install RVM
-RUN apt-get update && \
-    apt-get install -y \
-      libgdbm-dev \
-      libncurses5-dev \
-      automake \
-      libtool \
-      bison \
-      libffi-dev && \
+# https://github.com/rvm/ubuntu_rvm
+RUN apt-add-repository -y \
+      ppa:rael-gc/rvm && \
+    apt-get update && \
+    apt-get install --no-install-recommends -y \
+      rvm && \
     apt-get clean && \
-    gpg --keyserver hkp://keys.gnupg.net \
-        --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 \
-                    7D2BAF1CF37B13E2069D6956105BD0E739499BDB && \
-    curl -sSL https://get.rvm.io | bash -s stable
+    rm -rf /var/lib/apt/lists/*
 
 # install Ruby via RVM
-RUN /bin/bash -l -c ". /etc/profile.d/rvm.sh && \
-    rvm install ${RUBY_VERSION} --disable-binary && \
+RUN /bin/bash --login -c \
+    "rvm install ${RUBY_VERSION} --disable-binary && \
     rvm use ${RUBY_VERSION} --default"
 
 # update Gems, install chromedriver and update it
-RUN /bin/bash -l -c ". /etc/profile.d/rvm.sh && gem update --system && gem install chromedriver-helper && chromedriver-update"
+RUN /bin/bash --login -c \
+    "gem update --system && gem install chromedriver-helper && chromedriver-update"
 
 # copy current app to /srv/app
 RUN mkdir /srv/app
